@@ -10,6 +10,37 @@ st.set_page_config(
 )
 
 ANIOS_DEFECTO = (2014, 2025)
+VARIABLES     = ["Provincia", "Tipo de arma"]
+
+# ------------------------------------------------------------------
+# Pre-carga eagerly al iniciar la sesión (mientras servicios están activos)
+# ------------------------------------------------------------------
+def _precarga_cache():
+    """Carga todas las combinaciones posibles al inicio de sesión."""
+    if st.session_state.get("cache_precargado"):
+        return
+    try:
+        anios = cliente_grpc.get_anios_disponibles()
+        st.session_state.anios = anios
+        anio_min, anio_max = min(anios), max(anios)
+
+        for variable in VARIABLES:
+            clave = f"datos_{variable}_{anio_min}_{anio_max}"
+            if clave not in st.session_state:
+                if variable == "Provincia":
+                    st.session_state[clave] = cliente_grpc.get_distribucion_por_provincia(anio_min, anio_max)
+                else:
+                    st.session_state[clave] = cliente_grpc.get_frecuencia_por_arma(anio_min, anio_max)
+
+        if "conteo_categorias" not in st.session_state:
+            st.session_state.conteo_categorias = cliente_grpc.get_conteo_por_categoria()
+
+        st.session_state.cache_precargado = True
+    except Exception:
+        pass  # Si los servicios no están listos aún, se intentará en cada request
+
+
+_precarga_cache()
 
 # ------------------------------------------------------------------
 # Helpers
@@ -21,7 +52,6 @@ def _indicador(activo: bool, nombre: str) -> str:
 
 
 def _intentar_cargar_anios() -> list[int]:
-    """Retorna años desde el servicio o desde caché; lista vacía si ambos fallan."""
     if "anios" in st.session_state:
         return st.session_state.anios
     try:
@@ -33,9 +63,6 @@ def _intentar_cargar_anios() -> list[int]:
 
 
 def _intentar_obtener_datos(variable: str, anio_inicio: int, anio_fin: int):
-    """Retorna (datos, etiqueta, titulo, desde_cache).
-    Siempre intenta el servicio; si falla usa caché; si no hay caché devuelve lista vacía.
-    """
     cache_key = f"datos_{variable}_{anio_inicio}_{anio_fin}"
     desde_cache = False
 
@@ -44,11 +71,11 @@ def _intentar_obtener_datos(variable: str, anio_inicio: int, anio_fin: int):
             datos = cliente_grpc.get_distribucion_por_provincia(anio_inicio, anio_fin)
         else:
             datos = cliente_grpc.get_frecuencia_por_arma(anio_inicio, anio_fin)
-        st.session_state[cache_key] = datos          # actualiza caché con dato fresco
+        st.session_state[cache_key] = datos
     except Exception:
-        datos = st.session_state.get(cache_key)      # intenta recuperar caché
+        datos = st.session_state.get(cache_key)
         if datos is None:
-            datos = []                               # sin caché → lista vacía, no error
+            datos = []
         else:
             desde_cache = True
 
@@ -62,7 +89,7 @@ def _intentar_obtener_datos(variable: str, anio_inicio: int, anio_fin: int):
 
 
 # ------------------------------------------------------------------
-# Sidebar — estado de servicios (siempre visible)
+# Sidebar
 # ------------------------------------------------------------------
 with st.sidebar:
     st.title("Estado de servicios")
@@ -72,18 +99,14 @@ with st.sidebar:
     st.markdown(_indicador(analitica_ok, "Nodo Analítica (gRPC)"))
 
     if not maestro_ok:
-        st.warning("Nodo Maestro caído. Mostrando datos en caché.")
+        st.warning("Nodo Maestro caído.")
     if not analitica_ok:
-        st.warning("Nodo Analítica caído. Mostrando datos en caché.")
+        st.warning("Nodo Analítica caído.")
 
     st.divider()
 
-    # Años: desde servicio o valores por defecto
     anios = _intentar_cargar_anios()
-    if anios:
-        anio_min, anio_max = min(anios), max(anios)
-    else:
-        anio_min, anio_max = ANIOS_DEFECTO
+    anio_min, anio_max = (min(anios), max(anios)) if anios else ANIOS_DEFECTO
 
     st.subheader("Filtros")
     if anio_min == anio_max:
@@ -96,24 +119,16 @@ with st.sidebar:
             max_value=anio_max,
             value=(anio_min, anio_max),
         )
-    variable = st.radio(
-        "Variable de análisis",
-        options=["Provincia", "Tipo de arma"],
-    )
-    tipo_grafico = st.radio(
-        "Tipo de gráfico",
-        options=["Barras", "Pastel"],
-    )
+    variable = st.radio("Variable de análisis", options=VARIABLES)
+    tipo_grafico = st.radio("Tipo de gráfico", options=["Barras", "Pastel"])
 
 # ------------------------------------------------------------------
-# Contenido principal — siempre se renderiza
+# Contenido principal
 # ------------------------------------------------------------------
 st.title("Homicidios — Análisis exploratorio")
 anio_inicio, anio_fin = rango
 
-# ------------------------------------------------------------------
-# KPIs — conteo por categoría (Pyro4 → gRPC → Dashboard)
-# ------------------------------------------------------------------
+# KPIs — conteo por categoría
 try:
     if "conteo_categorias" not in st.session_state:
         st.session_state.conteo_categorias = cliente_grpc.get_conteo_por_categoria()
@@ -122,31 +137,28 @@ except Exception:
     conteo = st.session_state.get("conteo_categorias", {})
 
 if conteo:
-    cols = st.columns(len(conteo))
     iconos = {"Homicidio": "🔫", "Asesinato": "⚔️", "Sicariato": "🎯", "Femicidio": "🚨"}
+    cols = st.columns(len(conteo))
     for col, (cat, total) in zip(cols, conteo.items()):
         col.metric(label=f"{iconos.get(cat, '')} {cat}", value=f"{total:,}")
     st.divider()
 
+# Gráfico principal
 datos, etiqueta, titulo, desde_cache = _intentar_obtener_datos(variable, anio_inicio, anio_fin)
-
 servicios_caidos = not maestro_ok or not analitica_ok
+
 if servicios_caidos and desde_cache:
     st.warning("⚠️ Uno o más nodos no disponibles. Mostrando últimos datos en caché.")
 elif servicios_caidos and not datos:
-    st.error("⚠️ Servicios no disponibles y sin datos en caché. Levanta los nodos y recarga.")
+    st.error("⚠️ Servicios caídos sin datos en caché. Levanta los nodos y recarga la página.")
 
 if not datos:
     st.info("Sin datos para mostrar. Verifica que los nodos estén activos.")
 else:
     if desde_cache:
-        st.caption("📦 Datos en caché — los filtros no se actualizarán hasta que los servicios vuelvan en línea.")
-
-    if tipo_grafico == "Barras":
-        fig = graficos.grafico_barras(datos, titulo, etiqueta)
-    else:
-        fig = graficos.grafico_pastel(datos, titulo)
-
+        st.caption("📦 Datos en caché — se actualizarán cuando los servicios vuelvan en línea.")
+    fig = graficos.grafico_barras(datos, titulo, etiqueta) if tipo_grafico == "Barras" \
+          else graficos.grafico_pastel(datos, titulo)
     st.plotly_chart(fig, use_container_width=True)
 
     with st.expander("Ver tabla de datos"):
