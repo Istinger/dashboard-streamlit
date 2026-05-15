@@ -1,10 +1,11 @@
+import os
 import socket
 import Pyro4
 
-PYRO_HOST  = "localhost"
-PYRO_PORT  = 9090
-GRPC_HOST  = "localhost"
-GRPC_PORT  = 50051
+PYRO_HOST  = os.environ.get("PYRO_NS_HOST", "localhost")
+PYRO_PORT  = int(os.environ.get("PYRO_NS_PORT", "9090"))
+GRPC_HOST  = os.environ.get("GRPC_HOST", "localhost")
+GRPC_PORT  = int(os.environ.get("GRPC_PORT", "50051"))
 
 
 def _tcp_abierto(host: str, puerto: int, timeout: float = 2.0) -> bool:
@@ -18,7 +19,9 @@ def _tcp_abierto(host: str, puerto: int, timeout: float = 2.0) -> bool:
 def estado_nodo_maestro() -> bool:
     """Verifica que el nodo maestro responda llamadas remotas (no solo que esté registrado)."""
     try:
-        with Pyro4.Proxy("PYRONAME:seguridad.nodo_maestro") as proxy:
+        ns = Pyro4.locateNS(host=PYRO_HOST, port=PYRO_PORT)
+        uri = ns.lookup("seguridad.nodo_maestro")
+        with Pyro4.Proxy(uri) as proxy:
             proxy._pyroBind()
         return True
     except Exception:

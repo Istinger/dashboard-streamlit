@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0f\x61nalitica.proto\x12\tanalitica\"6\n\rFiltroRequest\x12\x13\n\x0b\x61nio_inicio\x18\x01 \x01(\x05\x12\x10\n\x08\x61nio_fin\x18\x02 \x01(\x05\"4\n\x0eItemFrecuencia\x12\x0e\n\x06nombre\x18\x01 \x01(\t\x12\x12\n\nfrecuencia\x18\x02 \x01(\x05\"@\n\x14\x44istribucionResponse\x12(\n\x05items\x18\x01 \x03(\x0b\x32\x19.analitica.ItemFrecuencia\"\x1e\n\rAniosResponse\x12\r\n\x05\x61nios\x18\x01 \x03(\x05\x32\x8a\x02\n\x10\x41naliticaService\x12X\n\x1bGetDistribucionPorProvincia\x12\x18.analitica.FiltroRequest\x1a\x1f.analitica.DistribucionResponse\x12Q\n\x14GetFrecuenciaPorArma\x12\x18.analitica.FiltroRequest\x1a\x1f.analitica.DistribucionResponse\x12I\n\x13GetAniosDisponibles\x12\x18.analitica.FiltroRequest\x1a\x18.analitica.AniosResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0f\x61nalitica.proto\x12\tanalitica\"6\n\rFiltroRequest\x12\x13\n\x0b\x61nio_inicio\x18\x01 \x01(\x05\x12\x10\n\x08\x61nio_fin\x18\x02 \x01(\x05\"4\n\x0eItemFrecuencia\x12\x0e\n\x06nombre\x18\x01 \x01(\t\x12\x12\n\nfrecuencia\x18\x02 \x01(\x05\"@\n\x14\x44istribucionResponse\x12(\n\x05items\x18\x01 \x03(\x0b\x32\x19.analitica.ItemFrecuencia\"\x1e\n\rAniosResponse\x12\r\n\x05\x61nios\x18\x01 \x03(\x05\"1\n\rCategoriaItem\x12\x11\n\tcategoria\x18\x01 \x01(\t\x12\r\n\x05total\x18\x02 \x01(\x05\"C\n\x18\x43onteoCategoriasResponse\x12\'\n\x05items\x18\x01 \x03(\x0b\x32\x18.analitica.CategoriaItem2\xe2\x02\n\x10\x41naliticaService\x12X\n\x1bGetDistribucionPorProvincia\x12\x18.analitica.FiltroRequest\x1a\x1f.analitica.DistribucionResponse\x12Q\n\x14GetFrecuenciaPorArma\x12\x18.analitica.FiltroRequest\x1a\x1f.analitica.DistribucionResponse\x12I\n\x13GetAniosDisponibles\x12\x18.analitica.FiltroRequest\x1a\x18.analitica.AniosResponse\x12V\n\x15GetConteoPorCategoria\x12\x18.analitica.FiltroRequest\x1a#.analitica.ConteoCategoriasResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -39,6 +39,10 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_DISTRIBUCIONRESPONSE']._serialized_end=204
   _globals['_ANIOSRESPONSE']._serialized_start=206
   _globals['_ANIOSRESPONSE']._serialized_end=236
-  _globals['_ANALITICASERVICE']._serialized_start=239
-  _globals['_ANALITICASERVICE']._serialized_end=505
+  _globals['_CATEGORIAITEM']._serialized_start=238
+  _globals['_CATEGORIAITEM']._serialized_end=287
+  _globals['_CONTEOCATEGORIASRESPONSE']._serialized_start=289
+  _globals['_CONTEOCATEGORIASRESPONSE']._serialized_end=356
+  _globals['_ANALITICASERVICE']._serialized_start=359
+  _globals['_ANALITICASERVICE']._serialized_end=713
 # @@protoc_insertion_point(module_scope)

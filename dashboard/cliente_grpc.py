@@ -8,8 +8,10 @@ import grpc
 import analitica_pb2
 import analitica_pb2_grpc
 
-HOST  = "localhost"
-PUERTO = 50051
+# IP de la máquina donde corre el servidor gRPC (Nodo Analítica)
+# Puede ser localhost o la IP de otra máquina en la red, ej: 192.168.1.20
+HOST   = os.environ.get("GRPC_HOST", "localhost")
+PUERTO = int(os.environ.get("GRPC_PORT", "50051"))
 
 
 def _canal():
@@ -38,3 +40,11 @@ def get_anios_disponibles() -> list[int]:
         req  = analitica_pb2.FiltroRequest(anio_inicio=0, anio_fin=0)
         resp = stub.GetAniosDisponibles(req)
     return list(resp.anios)
+
+
+def get_conteo_por_categoria() -> dict:
+    with _canal() as canal:
+        stub = analitica_pb2_grpc.AnaliticaServiceStub(canal)
+        req  = analitica_pb2.FiltroRequest(anio_inicio=0, anio_fin=0)
+        resp = stub.GetConteoPorCategoria(req)
+    return {item.categoria: item.total for item in resp.items}

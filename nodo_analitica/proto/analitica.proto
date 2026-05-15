@@ -20,8 +20,18 @@ message AniosResponse {
   repeated int32 anios = 1;
 }
 
+message CategoriaItem {
+  string categoria  = 1;
+  int32  total      = 2;
+}
+
+message ConteoCategoriasResponse {
+  repeated CategoriaItem items = 1;
+}
+
 service AnaliticaService {
   rpc GetDistribucionPorProvincia (FiltroRequest) returns (DistribucionResponse);
   rpc GetFrecuenciaPorArma        (FiltroRequest) returns (DistribucionResponse);
   rpc GetAniosDisponibles         (FiltroRequest) returns (AniosResponse);
+  rpc GetConteoPorCategoria       (FiltroRequest) returns (ConteoCategoriasResponse);
 }

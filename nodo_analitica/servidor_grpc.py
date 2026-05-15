@@ -55,6 +55,19 @@ class AnaliticaServicer(analitica_pb2_grpc.AnaliticaServiceServicer):
             context.set_code(grpc.StatusCode.INTERNAL)
             return analitica_pb2.AniosResponse()
 
+    def GetConteoPorCategoria(self, request, context):
+        try:
+            conteo = cliente_pyro.conteo_por_categoria()
+            items = [
+                analitica_pb2.CategoriaItem(categoria=cat, total=total)
+                for cat, total in sorted(conteo.items(), key=lambda x: -x[1])
+            ]
+            return analitica_pb2.ConteoCategoriasResponse(items=items)
+        except Exception as exc:
+            context.set_details(str(exc))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            return analitica_pb2.ConteoCategoriasResponse()
+
 
 def main():
     servidor = grpc.server(futures.ThreadPoolExecutor(max_workers=4))

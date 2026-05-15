@@ -49,6 +49,11 @@ class AnaliticaServiceStub(object):
                 request_serializer=analitica__pb2.FiltroRequest.SerializeToString,
                 response_deserializer=analitica__pb2.AniosResponse.FromString,
                 _registered_method=True)
+        self.GetConteoPorCategoria = channel.unary_unary(
+                '/analitica.AnaliticaService/GetConteoPorCategoria',
+                request_serializer=analitica__pb2.FiltroRequest.SerializeToString,
+                response_deserializer=analitica__pb2.ConteoCategoriasResponse.FromString,
+                _registered_method=True)
 
 
 class AnaliticaServiceServicer(object):
@@ -72,6 +77,12 @@ class AnaliticaServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetConteoPorCategoria(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_AnaliticaServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -89,6 +100,11 @@ def add_AnaliticaServiceServicer_to_server(servicer, server):
                     servicer.GetAniosDisponibles,
                     request_deserializer=analitica__pb2.FiltroRequest.FromString,
                     response_serializer=analitica__pb2.AniosResponse.SerializeToString,
+            ),
+            'GetConteoPorCategoria': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetConteoPorCategoria,
+                    request_deserializer=analitica__pb2.FiltroRequest.FromString,
+                    response_serializer=analitica__pb2.ConteoCategoriasResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -172,6 +188,33 @@ class AnaliticaService(object):
             '/analitica.AnaliticaService/GetAniosDisponibles',
             analitica__pb2.FiltroRequest.SerializeToString,
             analitica__pb2.AniosResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetConteoPorCategoria(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/analitica.AnaliticaService/GetConteoPorCategoria',
+            analitica__pb2.FiltroRequest.SerializeToString,
+            analitica__pb2.ConteoCategoriasResponse.FromString,
             options,
             channel_credentials,
             insecure,
