@@ -1,5 +1,4 @@
 _pycache_
-requirements.txt
 *.pyc
 *.pyo
 *.pyd
@@ -12,3 +11,5 @@ build/
 *.egg
 *.log
 .claude
+.claude_cache
+*/datos/homicidios.csv
