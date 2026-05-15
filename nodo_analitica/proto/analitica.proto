@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package analitica;
+
+message FiltroRequest {
+  int32 anio_inicio = 1;
+  int32 anio_fin    = 2;
+}
+
+message ItemFrecuencia {
+  string nombre     = 1;
+  int32  frecuencia = 2;
+}
+
+message DistribucionResponse {
+  repeated ItemFrecuencia items = 1;
+}
+
+message AniosResponse {
+  repeated int32 anios = 1;
+}
+
+service AnaliticaService {
+  rpc GetDistribucionPorProvincia (FiltroRequest) returns (DistribucionResponse);
+  rpc GetFrecuenciaPorArma        (FiltroRequest) returns (DistribucionResponse);
+  rpc GetAniosDisponibles         (FiltroRequest) returns (AniosResponse);
+}

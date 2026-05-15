@@ -1,0 +1,14 @@
+_pycache_
+requirements.txt
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+*.dylib
+*.egg-info/
+dist/
+build/
+*.egg
+*.log
+.claude
